@@ -2486,6 +2486,185 @@ do
             Library:RefreshConfigsList(ConfigsSearchbox)
         end
     end
-end
+-- // Redesigned Components //
+
+        Library.Watermark = function(self, Name)
+            local Watermark = { }
+            local Items = { } do
+                Items["Watermark"] = Instances:Create("Frame", {
+                    Parent = Library.Holder.Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2.new(0.5, 0),
+                    Position = UDim2.new(0.5, 0, 0, 25),
+                    Size = UDim2.new(0, 180, 0, 30),
+                    BackgroundColor3 = Library.Theme["Background 1"],
+                    BorderSizePixel = 0,
+                    ZIndex = 5,
+                }) Items["Watermark"]:AddToTheme({BackgroundColor3 = "Background 1"})
+
+                -- Premium Glow & Stroke
+                local Stroke = Instances:Create("UIStroke", {
+                    Parent = Items["Watermark"].Instance,
+                    Color = Library.Theme["Accent"],
+                    Thickness = 1.5,
+                }) Stroke:AddToTheme({Color = "Accent"})
+
+                Items["Text"] = Instances:Create("TextLabel", {
+                    Parent = Items["Watermark"].Instance,
+                    FontFace = Library.Font,
+                    TextColor3 = Library.Theme["Text"],
+                    Text = Name,
+                    Size = UDim2.new(1, 0, 1, 0),
+                    BackgroundTransparency = 1,
+                    TextSize = 14,
+                }) Items["Text"]:AddToTheme({TextColor3 = "Text"})
+            end
+
+            function Watermark:SetText(Text)
+                Items["Text"].Instance.Text = Text
+                local width = Items["Text"].Instance.TextBounds.X + 30
+                Items["Watermark"]:Tween(nil, {Size = UDim2.new(0, width, 0, 30)})
+            end
+            
+            return Watermark
+        end
+
+        Library.KeybindList = function(self)
+            local KeybindList = { }
+            local Items = { } do
+                Items["Main"] = Instances:Create("Frame", {
+                    Parent = Library.Holder.Instance,
+                    Position = UDim2.new(0, 20, 0.5, 0),
+                    Size = UDim2.new(0, 180, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    BackgroundColor3 = Library.Theme["Background 2"],
+                    BorderSizePixel = 0
+                }) Items["Main"]:AddToTheme({BackgroundColor3 = "Background 2"})
+
+                Instances:Create("UIStroke", {
+                    Parent = Items["Main"].Instance,
+                    Color = Library.Theme["Border"],
+                }):AddToTheme({Color = "Border"})
+
+                Items["Title"] = Instances:Create("TextLabel", {
+                    Parent = Items["Main"].Instance,
+                    Text = " Keybinds",
+                    Size = UDim2.new(1, 0, 0, 25),
+                    TextColor3 = Library.Theme["Accent"],
+                    BackgroundTransparency = 1,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    FontFace = Library.Font,
+                }) Items["Title"]:AddToTheme({TextColor3 = "Accent"})
+                
+                Items["Container"] = Instances:Create("Frame", {
+                    Parent = Items["Main"].Instance,
+                    Position = UDim2.new(0, 0, 0, 25),
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    BackgroundTransparency = 1
+                })
+                
+                Instances:Create("UIListLayout", { Parent = Items["Container"].Instance, Padding = UDim.new(0, 2) })
+            end
+
+            function KeybindList:Add(Name, Key)
+                local BindLabel = Instances:Create("TextLabel", {
+                    Parent = Items["Container"].Instance,
+                    Size = UDim2.new(1, -10, 0, 20),
+                    Text = " " .. Name .. " [" .. Key .. "]",
+                    TextColor3 = Library.Theme["Text"],
+                    BackgroundTransparency = 1,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    TextSize = 13,
+                    FontFace = Library.Font
+                }) BindLabel:AddToTheme({TextColor3 = "Text"})
+                return BindLabel
+            end
+
+            return KeybindList
+        end
+
+        -- // Section UI Elements (Button, Toggle, etc) //
+        
+        function Library.Sections:Button(Data)
+            local Button = { Callback = Data.Callback or function() end }
+            local Items = { }
+            
+            Items["Button"] = Instances:Create("TextButton", {
+                Parent = self.Instance,
+                Size = UDim2.new(1, -10, 0, 30),
+                BackgroundColor3 = Library.Theme["Element"],
+                Text = Data.Name,
+                TextColor3 = Library.Theme["Text"],
+                FontFace = Library.Font,
+                AutoButtonColor = false,
+                BorderSizePixel = 0
+            }) Items["Button"]:AddToTheme({BackgroundColor3 = "Element", TextColor3 = "Text"})
+
+            Instances:Create("UIStroke", {
+                Parent = Items["Button"].Instance,
+                Color = Library.Theme["Border"],
+                ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            }):AddToTheme({Color = "Border"})
+
+            Items["Button"]:Connect("MouseButton1Click", function()
+                Button.Callback()
+                -- Click animation
+                Items["Button"]:Tween(TweenInfo.new(0.1), {BackgroundColor3 = Library.Theme["Accent"]})
+                task.wait(0.1)
+                Items["Button"]:Tween(TweenInfo.new(0.1), {BackgroundColor3 = Library.Theme["Element"]})
+            end)
+            
+            return Button
+        end
+
+        function Library.Sections:Toggle(Data)
+            local Toggle = { 
+                Value = Data.Default or false, 
+                Callback = Data.Callback or function() end,
+                Flag = Data.Flag or Library:NextFlag()
+            }
+            
+            local Items = { }
+            Items["Main"] = Instances:Create("TextButton", {
+                Parent = self.Instance,
+                Size = UDim2.new(1, -10, 0, 30),
+                BackgroundTransparency = 1,
+                Text = "  " .. Data.Name,
+                TextColor3 = Library.Theme["Inactive Text"],
+                FontFace = Library.Font,
+                TextXAlignment = Enum.TextXAlignment.Left,
+            }) Items["Main"]:AddToTheme({TextColor3 = "Inactive Text"})
+
+            Items["Box"] = Instances:Create("Frame", {
+                Parent = Items["Main"].Instance,
+                AnchorPoint = Vector2.new(1, 0.5),
+                Position = UDim2.new(1, -5, 0.5, 0),
+                Size = UDim2.new(0, 16, 0, 16),
+                BackgroundColor3 = Library.Theme["Inline"],
+                BorderSizePixel = 0
+            }) Items["Box"]:AddToTheme({BackgroundColor3 = "Inline"})
+
+            function Toggle:Set(State)
+                Toggle.Value = State
+                Library.Flags[Toggle.Flag] = State
+                local Color = State and Library.Theme["Accent"] or Library.Theme["Inline"]
+                local TextCol = State and Library.Theme["Text"] or Library.Theme["Inactive Text"]
+                
+                Items["Box"]:Tween(nil, {BackgroundColor3 = Color})
+                Items["Main"]:Tween(nil, {TextColor3 = TextCol})
+                Toggle.Callback(State)
+            end
+
+            Items["Main"]:Connect("MouseButton1Click", function()
+                Toggle:Set(not Toggle.Value)
+            end)
+
+            Toggle:Set(Toggle.Value)
+            return Toggle
+        end
+
+    end -- End of Library Logic
+end -- End of Global Wrapper
 
 return Library
