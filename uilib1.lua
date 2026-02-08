@@ -9,7 +9,7 @@ local Library do
         Theme =  { },
         espfont = nil,
 
-        MenuKeybind = tostring(Enum.KeyCode.RightControl), 
+        MenuKeybind = tostring(Enum.KeyCode.RightShift), 
 
         Flags = { },
 
