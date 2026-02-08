@@ -2257,10 +2257,8 @@ do
         end
 
         return Keybind, Items 
-    end
-Library.Watermark = function(self, Name)
+    endLibrary.Watermark = function(self, Name)
     local Watermark = {}
-    
     local Items = {}
 
     -- Main Frame
@@ -2268,71 +2266,94 @@ Library.Watermark = function(self, Name)
         Parent = Library.Holder.Instance,
         Name = "\0",
         AnchorPoint = Vector2New(0.5, 0),
-        Position = UDim2New(0.5, 0, 0, 25),
-        Size = UDim2New(0, 200, 0, 28),
+        Position = UDim2New(0.5, 0, 0, 30),
+        Size = UDim2New(0, 250, 0, 40), -- Bigger frame
         BorderSizePixel = 0,
-        BackgroundColor3 = FromRGB(25, 20, 20), -- Dark red-black base
+        BackgroundColor3 = FromRGB(30, 20, 20), -- Dark base
         ZIndex = 5,
         ClipsDescendants = true
     })
     Items["Watermark"]:AddToTheme({BackgroundColor3 = "Background 1"})
 
-    -- Accent Glow
+    -- Pulsing Glow Background
     Items["Glow"] = Instances:Create("Frame", {
         Parent = Items["Watermark"].Instance,
         Name = "\0",
         AnchorPoint = Vector2New(0.5, 0.5),
         Position = UDim2New(0.5, 0, 0.5, 0),
-        Size = UDim2New(1, 10, 1, 10),
-        BackgroundColor3 = FromRGB(220, 50, 50), -- Bright red accent
+        Size = UDim2New(1.1, 0, 1.1, 0), -- Slightly bigger than frame for glow
+        BackgroundColor3 = FromRGB(220, 50, 50),
         BorderSizePixel = 0,
         ZIndex = 3
     })
 
+    local GlowTweenInfo = TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
+    local GlowTween = game:GetService("TweenService"):Create(Items["Glow"].Instance, GlowTweenInfo, {BackgroundTransparency = 0.7})
+    GlowTween:Play()
+
+    -- Gradient overlay for depth
     Instances:Create("UIGradient", {
         Parent = Items["Glow"].Instance,
         Name = "\0",
         Rotation = 45,
-        Transparency = NumSequence{NumSequenceKeypoint(0, 0), NumSequenceKeypoint(1, 1)}
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, FromRGB(255, 80, 80)),
+            ColorSequenceKeypoint.new(1, FromRGB(150, 0, 0))
+        }),
+        Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0,0.3), NumberSequenceKeypoint.new(1,0.8)})
     })
 
-    -- Futuristic Text
+    -- Watermark Text
     Items["Text"] = Instances:Create("TextLabel", {
         Parent = Items["Watermark"].Instance,
         Name = "\0",
         FontFace = Library.Font,
-        TextColor3 = FromRGB(255, 100, 100), -- Light red
+        TextColor3 = FromRGB(255, 120, 120),
         Text = Name,
         AnchorPoint = Vector2New(0.5, 0.5),
         Position = UDim2New(0.5, 0, 0.5, 0),
         BackgroundTransparency = 1,
         ZIndex = 5,
         AutomaticSize = Enum.AutomaticSize.X,
-        TextSize = 16
+        TextSize = 20, -- Bigger text
+        RichText = true
     })
     Items["Text"]:AddToTheme({TextColor3 = "Accent"})
 
-    -- Dynamic underline / bar
+    -- Animated Underline
     Items["Underline"] = Instances:Create("Frame", {
         Parent = Items["Watermark"].Instance,
         Name = "\0",
         AnchorPoint = Vector2New(0, 1),
-        Position = UDim2New(0, 0, 1, -2),
-        Size = UDim2New(0, 0, 0, 2),
-        BackgroundColor3 = FromRGB(220, 50, 50), -- same bright red
+        Position = UDim2New(0, 0, 1, -4),
+        Size = UDim2New(0, 0, 0, 3),
+        BackgroundColor3 = FromRGB(220, 50, 50),
         BorderSizePixel = 0,
         ZIndex = 6
     })
 
-    -- Animate underline width
+    local TweenService = game:GetService("TweenService")
+
+    -- Function to animate underline
+    local function AnimateUnderline(TargetWidth)
+        local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        TweenService:Create(Items["Underline"].Instance, tweenInfo, {Size = UDim2New(0, TargetWidth, 0, 3)}):Play()
+    end
+
+    -- Pulsing underline animation
+    local PulseTween = TweenService:Create(Items["Underline"].Instance, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {BackgroundTransparency = 0.3})
+    PulseTween:Play()
+
+    -- Update text & underline dynamically
     function Watermark:SetText(Text)
         Text = tostring(Text)
         Items["Text"].Instance.Text = Text
-        local targetWidth = Items["Text"].Instance.TextBounds.X + 20
-        Items["Watermark"]:Tween(nil, {Size = UDim2New(0, targetWidth, 0, 28)})
-        Items["Underline"]:Tween(nil, {Size = UDim2New(0, targetWidth, 0, 2)})
+        local targetWidth = Items["Text"].Instance.TextBounds.X + 30
+        Items["Watermark"]:Tween(nil, {Size = UDim2New(0, targetWidth, 0, 40)})
+        AnimateUnderline(targetWidth)
     end
 
+    -- Set visibility
     function Watermark:SetVisibility(Bool)
         Items["Watermark"].Instance.Visible = Bool
     end
@@ -2340,6 +2361,7 @@ Library.Watermark = function(self, Name)
     Watermark:SetText(Name)
     return Watermark
 end
+
 
 
     Library.KeybindList = function(self)
