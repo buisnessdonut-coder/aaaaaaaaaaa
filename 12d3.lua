@@ -9,7 +9,7 @@ local Library do
         Theme =  { },
         espfont = nil,
 
-        MenuKeybind = tostring(Enum.KeyCode.RightControl), 
+        MenuKeybind = tostring(Enum.KeyCode.RightShift), 
 
         Flags = { },
 
@@ -2259,110 +2259,229 @@ do
         return Keybind, Items 
     end
 Library.Watermark = function(self, Name)
-    local Watermark = {}
-    local Items = {}
-
-    -- Main Frame
-    Items["Watermark"] = Instances:Create("Frame", {
-        Parent = Library.Holder.Instance,
-        Name = "\0",
-        AnchorPoint = Vector2New(0.5, 0),
-        Position = UDim2New(0.5, 0, 0, 30),
-        Size = UDim2New(0, 250, 0, 40), -- Bigger frame
-        BorderSizePixel = 0,
-        BackgroundColor3 = FromRGB(30, 20, 20), -- Dark base
-        ZIndex = 5,
-        ClipsDescendants = true
-    })
-    Items["Watermark"]:AddToTheme({BackgroundColor3 = "Background 1"})
-
-    -- Pulsing Glow Background
-    Items["Glow"] = Instances:Create("Frame", {
-        Parent = Items["Watermark"].Instance,
-        Name = "\0",
-        AnchorPoint = Vector2New(0.5, 0.5),
-        Position = UDim2New(0.5, 0, 0.5, 0),
-        Size = UDim2New(1.1, 0, 1.1, 0), -- Slightly bigger than frame for glow
-        BackgroundColor3 = FromRGB(220, 50, 50),
-        BorderSizePixel = 0,
-        ZIndex = 3
-    })
-
-    local GlowTweenInfo = TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
-    local GlowTween = game:GetService("TweenService"):Create(Items["Glow"].Instance, GlowTweenInfo, {BackgroundTransparency = 0.7})
-    GlowTween:Play()
-
-    -- Gradient overlay for depth
-    Instances:Create("UIGradient", {
-        Parent = Items["Glow"].Instance,
-        Name = "\0",
-        Rotation = 45,
-        Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, FromRGB(255, 80, 80)),
-            ColorSequenceKeypoint.new(1, FromRGB(150, 0, 0))
-        }),
-        Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0,0.3), NumberSequenceKeypoint.new(1,0.8)})
-    })
-
-    -- Watermark Text
-    Items["Text"] = Instances:Create("TextLabel", {
-        Parent = Items["Watermark"].Instance,
-        Name = "\0",
-        FontFace = Library.Font,
-        TextColor3 = FromRGB(255, 120, 120),
-        Text = Name,
-        AnchorPoint = Vector2New(0.5, 0.5),
-        Position = UDim2New(0.5, 0, 0.5, 0),
-        BackgroundTransparency = 1,
-        ZIndex = 5,
-        AutomaticSize = Enum.AutomaticSize.X,
-        TextSize = 20, -- Bigger text
-        RichText = true
-    })
-    Items["Text"]:AddToTheme({TextColor3 = "Accent"})
-
-    -- Animated Underline
-    Items["Underline"] = Instances:Create("Frame", {
-        Parent = Items["Watermark"].Instance,
-        Name = "\0",
-        AnchorPoint = Vector2New(0, 1),
-        Position = UDim2New(0, 0, 1, -4),
-        Size = UDim2New(0, 0, 0, 3),
-        BackgroundColor3 = FromRGB(220, 50, 50),
-        BorderSizePixel = 0,
-        ZIndex = 6
-    })
-
-    local TweenService = game:GetService("TweenService")
-
-    -- Function to animate underline
-    local function AnimateUnderline(TargetWidth)
-        local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-        TweenService:Create(Items["Underline"].Instance, tweenInfo, {Size = UDim2New(0, TargetWidth, 0, 3)}):Play()
+    local Watermark = { }
+    
+    local Items = { } do 
+        -- Main container with floating effect
+        Items["Container"] = Instances:Create("Frame", {
+            Parent = Library.Holder.Instance,
+            Name = "\0",
+            AnchorPoint = Vector2.new(0.5, 0),
+            Position = UDim2.new(0.5, 0, 0, 15),
+            Size = UDim2.new(0, 0, 0, 0),
+            BackgroundTransparency = 1,
+            ZIndex = 100,
+        })
+        
+        -- Subtle pulse effect container
+        Items["PulseContainer"] = Instances:Create("Frame", {
+            Parent = Items["Container"].Instance,
+            Name = "\0",
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            Size = UDim2.new(1, 20, 1, 20),
+            BackgroundTransparency = 1,
+        })
+        
+        -- Animated pulse rings
+        for i = 1, 3 do
+            Items["PulseRing"..i] = Instances:Create("Frame", {
+                Parent = Items["PulseContainer"].Instance,
+                Name = "\0",
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                Position = UDim2.new(0.5, 0, 0.5, 0),
+                Size = UDim2.new(0, 0, 0, 0),
+                BackgroundColor3 = Color3.fromRGB(255, 50, 50),
+                BackgroundTransparency = 0.8,
+                BorderSizePixel = 0,
+            })
+            
+            local corner = Instances:Create("UICorner", {
+                Parent = Items["PulseRing"..i].Instance,
+                CornerRadius = UDim.new(1, 0),
+            })
+        end
+        
+        -- Main content frame with glass morphism effect
+        Items["MainFrame"] = Instances:Create("Frame", {
+            Parent = Items["Container"].Instance,
+            Name = "\0",
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            Size = UDim2.new(0, 0, 0, 32),
+            BackgroundColor3 = Color3.fromRGB(20, 0, 0),
+            BackgroundTransparency = 0.3,
+            BorderSizePixel = 0,
+            ZIndex = 101,
+        })
+        
+        Items["MainFrame"]:AddToTheme({BackgroundColor3 = "Background 1"})
+        
+        -- Glass effect blur
+        Instances:Create("UICorner", {
+            Parent = Items["MainFrame"].Instance,
+            CornerRadius = UDim.new(0, 12),
+        })
+        
+        -- Subtle inner border
+        Items["InnerBorder"] = Instances:Create("Frame", {
+            Parent = Items["MainFrame"].Instance,
+            Name = "\0",
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            Size = UDim2.new(1, -4, 1, -4),
+            BackgroundTransparency = 1,
+            BorderColor3 = Color3.fromRGB(255, 100, 100),
+            BorderSizePixel = 1,
+            ZIndex = 102,
+        })
+        
+        Instances:Create("UICorner", {
+            Parent = Items["InnerBorder"].Instance,
+            CornerRadius = UDim.new(0, 10),
+        })
+        
+        Items["InnerBorder"]:AddToTheme({BorderColor3 = "Accent"})
+        
+        -- Accent dot
+        Items["AccentDot"] = Instances:Create("Frame", {
+            Parent = Items["MainFrame"].Instance,
+            Name = "\0",
+            AnchorPoint = Vector2.new(0, 0.5),
+            Position = UDim2.new(0, -10, 0.5, 0),
+            Size = UDim2.new(0, 6, 0, 6),
+            BackgroundColor3 = Color3.fromRGB(255, 50, 50),
+            BorderSizePixel = 0,
+            ZIndex = 103,
+        })
+        
+        Instances:Create("UICorner", {
+            Parent = Items["AccentDot"].Instance,
+            CornerRadius = UDim.new(1, 0),
+        })
+        
+        Items["AccentDot"]:AddToTheme({BackgroundColor3 = "Accent"})
+        
+        -- Animated accent line
+        Items["AccentLine"] = Instances:Create("Frame", {
+            Parent = Items["MainFrame"].Instance,
+            Name = "\0",
+            AnchorPoint = Vector2.new(0, 1),
+            Position = UDim2.new(0, -8, 0.5, 0),
+            Size = UDim2.new(0, 2, 0, 0),
+            BackgroundColor3 = Color3.fromRGB(255, 50, 50),
+            BorderSizePixel = 0,
+            ZIndex = 103,
+        })
+        
+        Items["AccentLine"]:AddToTheme({BackgroundColor3 = "Accent"})
+        
+        -- Text with modern font
+        Items["Text"] = Instances:Create("TextLabel", {
+            Parent = Items["MainFrame"].Instance,
+            Name = "\0",
+            FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium),
+            TextColor3 = Color3.fromRGB(255, 200, 200),
+            Text = Name,
+            AnchorPoint = Vector2.new(0, 0.5),
+            Position = UDim2.new(0, 12, 0.5, 0),
+            Size = UDim2.new(0, 0, 0, 20),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            ZIndex = 103,
+            AutomaticSize = Enum.AutomaticSize.X,
+            TextSize = 13,
+            TextXAlignment = Enum.TextXAlignment.Left,
+        })
+        
+        Items["Text"]:AddToTheme({TextColor3 = "Text"})
+        
+        -- Subtitle text (optional)
+        Items["Subtitle"] = Instances:Create("TextLabel", {
+            Parent = Items["MainFrame"].Instance,
+            Name = "\0",
+            FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Light),
+            TextColor3 = Color3.fromRGB(255, 150, 150),
+            Text = "▲",
+            AnchorPoint = Vector2.new(1, 0.5),
+            Position = UDim2.new(1, -8, 0.5, 0),
+            Size = UDim2.new(0, 16, 0, 16),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            ZIndex = 103,
+            TextSize = 12,
+            TextTransparency = 0.5,
+        })
     end
 
-    -- Pulsing underline animation
-    local PulseTween = TweenService:Create(Items["Underline"].Instance, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {BackgroundTransparency = 0.3})
-    PulseTween:Play()
+    -- Animation function for pulse rings
+    local function animatePulseRings()
+        for i = 1, 3 do
+            local ring = Items["PulseRing"..i].Instance
+            local tweenInfo = TweenInfo.new(
+                2,
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.Out,
+                -1,
+                false,
+                (i-1) * 0.3
+            )
+            
+            local goals = {
+                Size = UDim2.new(1, 0, 1, 0),
+                BackgroundTransparency = 1,
+            }
+            
+            Library:Tween(ring, tweenInfo, goals)
+        end
+    end
 
-    -- Update text & underline dynamically
+    -- Animation for accent line
+    local function animateAccentLine()
+        local line = Items["AccentLine"].Instance
+        local tweenInfo = TweenInfo.new(
+            0.5,
+            Enum.EasingStyle.Quad,
+            Enum.EasingDirection.Out
+        )
+        
+        Library:Tween(line, tweenInfo, {
+            Size = UDim2.new(0, 2, 0, 24),
+            Position = UDim2.new(0, -8, 0.5, 0),
+        })
+    end
+
     function Watermark:SetText(Text)
         Text = tostring(Text)
         Items["Text"].Instance.Text = Text
-        local targetWidth = Items["Text"].Instance.TextBounds.X + 30
-        Items["Watermark"]:Tween(nil, {Size = UDim2New(0, targetWidth, 0, 40)})
-        AnimateUnderline(targetWidth)
+        
+        -- Calculate new size based on text width
+        local textSize = Items["Text"].Instance.TextBounds.X
+        local newWidth = textSize + 40  -- Padding
+        
+        Items["MainFrame"]:Tween(nil, {
+            Size = UDim2.new(0, newWidth, 0, 32)
+        })
+        
+        Items["Container"]:Tween(nil, {
+            Size = UDim2.new(0, newWidth + 20, 0, 32 + 20)
+        })
     end
 
-    -- Set visibility
     function Watermark:SetVisibility(Bool)
-        Items["Watermark"].Instance.Visible = Bool
+        Items["Container"].Instance.Visible = Bool
+        if Bool then
+            animatePulseRings()
+            animateAccentLine()
+        end
     end
 
+    -- Initial setup
     Watermark:SetText(Name)
+    animateAccentLine()
+
     return Watermark
 end
-    
 
 
     Library.KeybindList = function(self)
